@@ -44,7 +44,7 @@
         <param name="publish_pose_stamped" value="true"/> #### 发布带有时间戳的位姿
         #### 关键帧要求 #########
         <param name="kf_dist_linear" value="0.1"/>    #### 关键帧需要移动的距离
-        <param name="kf_dist_angular" value="0.175"/> #### 关键帧需要变动的角度
+        <param name="kf_dist_angular" value="0.175"/> #### 关键帧需要变动的角度,0.175rad,10度
         #### icp参数配置 ########
         <param name="max_iterations" value="20"/>     #### 最大迭代次数
     </node>
@@ -55,11 +55,16 @@
         <param name="pub_pc_topic" value="scan_2_pc"/>        #### 发布的点云话题
     </node>
 
-    <!-- create node -->
-    <node pkg="multi_level_lidar_map" type="createNode" name="createNode" output="screen">
+    <!-- syncPosePC 同步节点 -->
+    <node pkg="multi_level_lidar_map" type="syncPosePC" name="syncPosePC" output="screen">
         <param name="scan_2_pc_topic" value="scan_2_pc"/>     #### 接收的laser转点云消息
-        <param name="odom_debug_switch" value="false"/>        #### 调试开关
-        <param name="pc_debug_switch" value="true"/>          #### 调试开关
+        <param name="node_liner_limit" value="0.3"/>          #### 节点距离变化限制
+        <param name="node_angular_limit" value="1.57"/>       #### 节点角度变化限制
+    </node>
+
+    <!-- 保存关键帧位姿节点 -->
+    <node pkg="multi_level_lidar_map" type="saveKeyFramePose" name="saveKeyFramePose" output="screen">
+        <param name="save_path" value="/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_pose/key_frame_pose.yaml"/>
     </node>
 
     <!-- rviz -->

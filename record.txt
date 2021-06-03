@@ -9,6 +9,7 @@
     ros-package: laser_filters
     ros-package: scan_tools: laser_scan_matcher
     ros-package: scan_tools: scan_to_cloud_converter
+    激光雷达 HOKUYO 10XL
 
 ### 项目进展记录 ###
 
@@ -22,3 +23,10 @@
              5.对scan_to_cloud_converter.cpp 做小修改, 以RJY做标记。
              6.tf树为 map->odom->base_link->laser_frame;
              7.createNode 接受点云和位姿，都为关键节点的位姿，且实现了同步接收。
+
+    #date    20210603
+    #version v0.2
+    #statue  processing
+    #brief   1.设置节点规则。node_liner_limit、node_angular_limit
+             2.记录节点时间戳和节点信息。save_path
+             3.节点角度需求判断用tf2::getYaw效果好于Eigen::eulerAngles。

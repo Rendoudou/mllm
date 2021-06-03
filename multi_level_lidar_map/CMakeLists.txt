@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(PCL 1.7 REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
@@ -31,6 +33,11 @@ add_definitions(${PCL_DEFINITIONS})
 message(STATUS "PCL_INCLUDE_DIRS:" ${PCL_INCLUDE_DIRS})
 message(STATUS "PCL_LIBRARY_DIRS:" ${PCL_LIBRARY_DIRS})
 message(STATUS "PCL_DEFINITIONS:" ${PCL_DEFINITIONS})
+
+message(STATUS "    OpenCV library status:")
+message(STATUS "    version: ${OpenCV_VERSION}")
+message(STATUS "    libraries: ${OpenCV_LIBS}")
+message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -102,6 +109,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
         include
+        ${PCL_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 
@@ -135,8 +143,22 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(createNode src/createNode.cpp)
-add_dependencies(createNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(createNode
+add_executable(syncPosePC src/syncPosePC.cpp)
+add_dependencies(syncPosePC ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(syncPosePC
         ${catkin_LIBRARIES}
+        )
+
+add_executable(saveKeyFrame src/saveKeyFrame.cpp)
+add_dependencies(saveKeyFrame ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(saveKeyFrame
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
+
+add_executable(saveKeyFramePose src/saveKeyFramePose.cpp)
+add_dependencies(saveKeyFramePose ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(saveKeyFramePose
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
         )
