@@ -30,3 +30,11 @@
     #brief   1.设置节点规则。node_liner_limit、node_angular_limit
              2.记录节点时间戳和节点信息。save_path
              3.节点角度需求判断用tf2::getYaw效果好于Eigen::eulerAngles。
+
+    #date    20210607
+    #version v0.3
+    #statue  processing
+    #brief   1.保存节点的orb、点云与图片，saveORBPcd
+             2.保存节点的Pose，savePose
+             3.生成点云地图，转化为栅格地图，createGridMap。
+             4.生成的点云地图效果不好，考虑用gmapping代替。

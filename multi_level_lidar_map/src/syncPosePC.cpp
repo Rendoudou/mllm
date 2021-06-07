@@ -1,5 +1,5 @@
 /**
- * @brief 创建节点数据
+ * @brief 发布里程计，构建点云地图，发布同步节点数据。
  * @author rjy
  * @version 1.1
  * @date 2021.06.02
@@ -59,10 +59,6 @@ struct localParam {
     std::string key_pose_topic = "key_pose_re_pub";
     std::string key_pc_topic = "key_pc_re_pub";
 
-    pcl::PointCloud<PointT>::ConstPtr key_frame = nullptr;
-    ros::Time key_frame_stamp;
-    ros::Time curr_pose_stamp;
-
     Eigen::Matrix4d last_pose; // 当前位姿
     Eigen::Matrix4d now_pose; // 上次的位姿
 
@@ -101,9 +97,9 @@ int main(int argc, char **argv) {
     sync.registerCallback(boost::bind(&syncPosePCCallback, _1, _2));
 
     // publisher
-    odom_pub = nh.advertise<nav_msgs::Odometry>(param.odom_topic, 5); //发送里程计结果
-    pose_re_pub = nh.advertise<geometry_msgs::PoseStamped>(param.key_pose_topic, 5);
-    pc_re_pub = nh.advertise<sensor_msgs::PointCloud2>(param.key_pc_topic, 5);
+    odom_pub = nh.advertise<nav_msgs::Odometry>(param.odom_topic, 5); // 发送里程计结果
+    pose_re_pub = nh.advertise<geometry_msgs::PoseStamped>(param.key_pose_topic, 5); // 同步后节点位姿
+    pc_re_pub = nh.advertise<sensor_msgs::PointCloud2>(param.key_pc_topic, 5); // 同步后节点点云
 
     // ros执行
     ros::spin();
@@ -135,8 +131,7 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
                                const sensor_msgs::PointCloud2ConstPtr &scan_2_pc_ptr) {
     //发布里程计
     static nav_msgs::Odometry odom;                         //里程计信息
-
-    // publish the transform 换个数据格式转发odometry
+    // publish the transform 换个数据格式转发odometry,publish the transform
     odom.header.frame_id = param.odom_frame_id;             //节点id odom
     odom.header.stamp = pose_stamped_ptr->header.stamp;     //设置时间戳
     odom.pose.pose.position = pose_stamped_ptr->pose.position; //提取设置位姿
@@ -145,17 +140,9 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
     odom.twist.twist.linear.x = 0.0;
     odom.twist.twist.linear.y = 0.0;
     odom.twist.twist.angular.z = 0.0;
-
-    // publish the transform
     odom_pub.publish(odom);
-    param.curr_pose_stamp = pose_stamped_ptr->header.stamp;
 
-    // 转换消息格式
-    pcl::PointCloud<PointT>::Ptr cloud_in(new pcl::PointCloud<PointT>); //申请点云空间
-    pcl::fromROSMsg(*scan_2_pc_ptr, *cloud_in); //转换消息格式
-    param.key_frame = cloud_in;                    //
-    param.key_frame_stamp = scan_2_pc_ptr->header.stamp;
-
+    //判断节点
     if (isNode(pose_stamped_ptr)) {
         pose_re_pub.publish(*pose_stamped_ptr);
         pc_re_pub.publish(*scan_2_pc_ptr);

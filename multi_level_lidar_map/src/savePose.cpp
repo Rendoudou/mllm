@@ -62,7 +62,7 @@ static void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose);
  */
 int main(int argc, char **argv) {
     setlocale(LC_ALL, "");
-    ros::init(argc, argv, "saveKeyFramePose"); //create node
+    ros::init(argc, argv, "savePose"); //create node
     ros::NodeHandle nh; // node handle
     initParams(nh);
     sub_pose = nh.subscribe<geometry_msgs::PoseStamped>(param.pose_topic, 5, &poseCallback);

@@ -14,7 +14,7 @@
           args="0 0 0 0 0 0 /map /odom" output="screen"/>
 
     <!-- 播放bag包 -->
-    <node pkg="rosbag" type="play" name="play"
+    <node pkg="rosbag" type="play" name="play" required="false"
           args="$(find multi_level_lidar_map)/hokuyo_laser_scan_0531.bag --delay=10 --clock"/>
 
     <!-- 启动滤波器 -->
@@ -62,9 +62,17 @@
         <param name="node_angular_limit" value="1.57"/>       #### 节点角度变化限制
     </node>
 
-    <!-- 保存关键帧位姿节点 -->
-    <node pkg="multi_level_lidar_map" type="saveKeyFramePose" name="saveKeyFramePose" output="screen">
+    <!-- 生成栅格地图 -->
+    <node pkg="multi_level_lidar_map" type="createGridMap" name="createGridMap" output="screen">
+    </node>
+
+    <!-- 保存关键帧节点位姿节点 -->
+    <node pkg="multi_level_lidar_map" type="savePose" name="savePose" output="screen">
         <param name="save_path" value="/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_pose/key_frame_pose.yaml"/>
+    </node>
+
+    <!-- 保存关键帧节点的点云与描述子 -->
+    <node pkg="multi_level_lidar_map" type="saveORBPcd" name="saveORBPcd" output="screen">
     </node>
 
     <!-- rviz -->

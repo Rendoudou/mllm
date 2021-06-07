@@ -149,16 +149,23 @@ target_link_libraries(syncPosePC
         ${catkin_LIBRARIES}
         )
 
-add_executable(saveKeyFrame src/saveKeyFrame.cpp)
-add_dependencies(saveKeyFrame ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(saveKeyFrame
+add_executable(saveORBPcd src/saveORBPcd.cpp)
+add_dependencies(saveORBPcd ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(saveORBPcd
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         )
 
-add_executable(saveKeyFramePose src/saveKeyFramePose.cpp)
-add_dependencies(saveKeyFramePose ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(saveKeyFramePose
+add_executable(savePose src/savePose.cpp)
+add_dependencies(savePose ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(savePose
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
+
+add_executable(createGridMap src/createGridMap.cpp)
+add_dependencies(createGridMap ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(createGridMap
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         )
