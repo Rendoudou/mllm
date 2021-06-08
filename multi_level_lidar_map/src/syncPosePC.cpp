@@ -115,6 +115,7 @@ static void initParams(const ros::NodeHandle &nh) {
     nh.getParam("scan_2_pc_topic", param.scan_2_pc_topic);
     nh.getParam("node_liner_limit", param.node_liner_limit);
     nh.getParam("node_angular_limit", param.node_angular_limit);
+    nh.getParam("odom_child_frame_id", param.child_frame_id);
 
     param.last_pose.setIdentity();
     param.now_pose.setIdentity();
@@ -136,7 +137,7 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
     odom.header.stamp = pose_stamped_ptr->header.stamp;     //设置时间戳
     odom.pose.pose.position = pose_stamped_ptr->pose.position; //提取设置位姿
     odom.pose.pose.orientation = pose_stamped_ptr->pose.orientation;
-    odom.child_frame_id = param.child_frame_id;             //scan_filtered
+    odom.child_frame_id = param.child_frame_id;             //laser_frame
     odom.twist.twist.linear.x = 0.0;
     odom.twist.twist.linear.y = 0.0;
     odom.twist.twist.angular.z = 0.0;
@@ -214,9 +215,11 @@ static bool isNode(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
 
     if (liner_change >= param.node_liner_limit || (angular_change >= param.node_angular_limit && angular_change <= 3)) { // || (angular_change >= param.node_angular_limit && angular_change <= 3)
         param.last_pose = param.now_pose; // 更新pose
+        /*
         std::cout << "stamp" << pose_stamped_ptr->header.stamp.toSec() << std::endl
                   << "=====liner change===== :" << liner_change << std::endl
                   << "=====angular change===== :" << angular_change << std::endl;
+        */
         return true;
     }
     return false;

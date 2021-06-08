@@ -9,6 +9,13 @@
 #include <ros/ros.h>
 #include <string>
 #include <queue>
+#include <unistd.h>
+#include <stdio.h>
+#include <dirent.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+
 
 // pcl
 #include <pcl/point_types.h>
@@ -47,7 +54,9 @@ struct localParam {
     std::string pc_topic = "key_pc_re_pub";
     std::string key_frame_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame/";
     std::string key_frame_orb_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_orb/key_frame_orb.yaml";
+
     cv::FileStorage fs;
+
     unsigned int grid_scale = 256;
     double max_distance = 5.0;
     double grid_precision = max_distance * 2 / grid_scale;
@@ -55,6 +64,9 @@ struct localParam {
 
 // functions
 static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg);
+static void getFilePath(const char *path, const char *filename, char *filepath);
+static bool deleteFile(const char* path);
+static bool detectLines(cv::Mat &img, cv::Mat &res);
 
 
 /**
@@ -68,6 +80,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "saveORBPcd"); //create node
     ros::NodeHandle nh; // node handle
     sub_pc = nh.subscribe<sensor_msgs::PointCloud2>(param.pc_topic, 10, &pcCallBack);
+    deleteFile(param.key_frame_save_path.c_str()); //
     param.fs.open(param.key_frame_orb_save_path, cv::FileStorage::WRITE);
     while(ros::ok()){
         ros::spin();
@@ -127,9 +140,84 @@ static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg) {
     "key_stamp" << std::to_string(cloud_msg->header.stamp.toNSec()) <<
     "}";
 
+    //霍夫变换 line
+    cv::Mat res;
+    detectLines(img, res);
+
     //保存点云
     pcl::io::savePCDFileASCII(param.key_frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + ".pcd", *cloud);
     cv::imwrite(param.key_frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + ".jpg", img);
+    cv::imwrite(param.key_frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + "_res" + ".jpg", res);
 
     return;
+}
+
+
+/**
+ * @brief
+ * @param path
+ * @param filename
+ * @param filepath
+ */
+void getFilePath(const char *path, const char *filename, char *filepath){
+    strcpy(filepath, path);
+    if(filepath[strlen(path) - 1] != '/')
+        strcat(filepath, "/");
+    strcat(filepath, filename);
+    printf("path is = %s\n",filepath);
+}
+
+
+/**
+ * @brief
+ * @param path
+ * @return
+ */
+bool deleteFile(const char* path){
+    DIR *dir;
+    struct dirent *dir_info;
+    struct stat stat_buf;
+    char filepath[256] = {0};
+    lstat(path, &stat_buf);
+
+    if (S_ISREG(stat_buf.st_mode))//判断是否是常规文件
+    {
+        remove(path);
+    }
+    else if (S_ISDIR(stat_buf.st_mode))//判断是否是目录
+    {
+        if ((dir = opendir(path)) == nullptr)
+            return true;
+        while ((dir_info = readdir(dir)) != nullptr)
+        {
+            getFilePath(path, dir_info->d_name, filepath);
+            if (strcmp(dir_info->d_name, ".") == 0 || strcmp(dir_info->d_name, "..") == 0)//判断是否是特殊目录
+                continue;
+            deleteFile(filepath);
+            rmdir(filepath);
+        }
+        closedir(dir);
+    }
+    return false;
+}
+
+
+/**
+ * @brief
+ * @param img
+ * @return
+ */
+bool detectLines(cv::Mat &img, cv::Mat &res){
+    cv::cvtColor(img, res, CV_GRAY2BGR);//将二值图转换为RGB图颜色空间，这里重新创建一张空Mat也行
+    //4. 霍夫变换检测
+    std::vector<cv::Vec4f> plines;//保存霍夫变换检测到的直线
+    HoughLinesP(img, plines, 1, CV_PI / 180, 10, 0, 10);//提取边缘时，会造成有些点不连续，所以maxLineGap设大点
+    //5. 显示检测到的直线
+    cv::Scalar color = cv::Scalar(0, 0, 255);//设置颜色
+    for (size_t i = 0; i < plines.size(); i++)
+    {
+        cv::Vec4f hline = plines[i];
+        line(res, cv::Point(hline[0], hline[1]), cv::Point(hline[2], hline[3]), color, 3, cv::LINE_AA);//绘制直线
+    }
+    return true;
 }

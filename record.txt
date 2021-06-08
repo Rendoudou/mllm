@@ -38,3 +38,11 @@
              2.保存节点的Pose，savePose
              3.生成点云地图，转化为栅格地图，createGridMap。
              4.生成的点云地图效果不好，考虑用gmapping代替。
+
+    #date    20210608
+    #version v0.4
+    #statue  processing
+    #brief   1.使用gmapping生成栅格地图，slam gammping
+             2.为了解决tf树的问题，将scan_filtered之后的点云时间戳都设置为ros::Time::now()
+                最初的scan话题不能显示，由于时间戳的问题。
+             3.加入霍夫变换求取点云中的直线，但是所求直线难以计算真值。

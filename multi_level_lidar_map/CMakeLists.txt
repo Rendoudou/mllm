@@ -163,9 +163,9 @@ target_link_libraries(savePose
         ${OpenCV_LIBS}
         )
 
-add_executable(createGridMap src/createGridMap.cpp)
-add_dependencies(createGridMap ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(createGridMap
+add_executable(createPCMap src/createPCMap.cpp)
+add_dependencies(createPCMap ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(createPCMap
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         )
