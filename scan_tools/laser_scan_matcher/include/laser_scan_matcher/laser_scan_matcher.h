@@ -27,11 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*  This package uses Canonical Scan Matcher [1], written by 
+/*  This package uses Canonical Scan Matcher [1], written by
  *  Andrea Censi
  *
- *  [1] A. Censi, "An ICP variant using a point-to-line metric" 
- *  Proceedings of the IEEE International Conference 
+ *  [1] A. Censi, "An ICP variant using a point-to-line metric"
+ *  Proceedings of the IEEE International Conference
  *  on Robotics and Automation (ICRA), 2008
  */
 
@@ -43,6 +43,8 @@
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
@@ -54,7 +56,7 @@
 #include <pcl_ros/point_cloud.h>
 
 #include <csm/csm_all.h>  // csm defines min and max, but Eigen complains
-#undef min 
+#undef min
 #undef max
 
 namespace scan_tools
@@ -72,7 +74,7 @@ class LaserScanMatcher
     typedef pcl::PointXYZ           PointT;
     typedef pcl::PointCloud<PointT> PointCloudT;
 
-    // **** ros  
+    // **** ros
 
     ros::NodeHandle nh_;
     ros::NodeHandle nh_private_;
@@ -91,6 +93,8 @@ class LaserScanMatcher
 
     ros::Publisher  pose_publisher_;
     ros::Publisher  pose_stamped_publisher_;
+    ros::Publisher  pose_with_covariance_publisher_;
+    ros::Publisher  pose_with_covariance_stamped_publisher_;
 
     // **** parameters
 
@@ -101,7 +105,11 @@ class LaserScanMatcher
     double cloud_res_;
     bool publish_tf_;
     bool publish_pose_;
+    bool publish_pose_with_covariance_;
     bool publish_pose_stamped_;
+    bool publish_pose_with_covariance_stamped_;
+    std::vector<double> position_covariance_;
+    std::vector<double> orientation_covariance_;
 
     bool use_cloud_input_;
 
@@ -118,6 +126,7 @@ class LaserScanMatcher
     bool use_imu_;
     bool use_odom_;
     bool use_vel_;
+    bool stamped_vel_;
 
     // **** state variables
 
@@ -138,8 +147,8 @@ class LaserScanMatcher
     nav_msgs::Odometry latest_odom_msg_;
     nav_msgs::Odometry last_used_odom_msg_;
 
-    geometry_msgs::TwistStamped latest_vel_msg_;
-    
+    geometry_msgs::Twist latest_vel_msg_;
+
     std::vector<double> a_cos_;
     std::vector<double> a_sin_;
 
@@ -162,14 +171,15 @@ class LaserScanMatcher
 
     void odomCallback(const nav_msgs::Odometry::ConstPtr& odom_msg);
     void imuCallback (const sensor_msgs::Imu::ConstPtr& imu_msg);
-    void velCallback (const geometry_msgs::TwistStamped::ConstPtr& twist_msg);
+    void velCallback (const geometry_msgs::Twist::ConstPtr& twist_msg);
+    void velStmpCallback(const geometry_msgs::TwistStamped::ConstPtr& twist_msg);
 
     void createCache (const sensor_msgs::LaserScan::ConstPtr& scan_msg);
     bool getBaseToLaserTf (const std::string& frame_id);
 
     bool newKeyframeNeeded(const tf::Transform& d);
 
-    void getPrediction(double& pr_ch_x, double& pr_ch_y, 
+    void getPrediction(double& pr_ch_x, double& pr_ch_y,
                        double& pr_ch_a, double dt);
 
     void createTfFromXYTheta(double x, double y, double theta, tf::Transform& t);

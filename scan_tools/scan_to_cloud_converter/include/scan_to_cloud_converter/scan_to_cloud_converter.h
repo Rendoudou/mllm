@@ -54,8 +54,8 @@ class ScanToCloudConverter
 
     PointT invalid_point_;
 
-    std::string pub_topic; // RJY 接受的LaserScan
-    std::string sub_topic; // RJY 发送的PointCloud2
+    std::string pub_topic; //RJY 接受的LaserScan
+    std::string sub_topic; //RJY 发送的PointCloud2
 
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
  

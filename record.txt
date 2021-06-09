@@ -9,6 +9,7 @@
     ros-package: laser_filters
     ros-package: scan_tools: laser_scan_matcher
     ros-package: scan_tools: scan_to_cloud_converter
+    接收的点云话题名为 /scan
     激光雷达 HOKUYO 10XL
 
 ### 项目进展记录 ###
@@ -21,21 +22,21 @@
              3.使用laser_scan_matcher获取关键帧位姿（具体关键帧规则还未确定）。
              4.对laser_scan_matcher.cpp 做小修改, 以RJY做标记。
              5.对scan_to_cloud_converter.cpp 做小修改, 以RJY做标记。
-             6.tf树为 map->odom->base_link->laser_frame;
+             6.tf树为 map->odom->base_link->laser_frame。
              7.createNode 接受点云和位姿，都为关键节点的位姿，且实现了同步接收。
 
     #date    20210603
     #version v0.2
     #statue  processing
-    #brief   1.设置节点规则。node_liner_limit、node_angular_limit
-             2.记录节点时间戳和节点信息。save_path
+    #brief   1.设置节点规则。node_liner_limit、node_angular_limit。
+             2.记录节点时间戳和节点信息。save_path。
              3.节点角度需求判断用tf2::getYaw效果好于Eigen::eulerAngles。
 
     #date    20210607
     #version v0.3
     #statue  processing
-    #brief   1.保存节点的orb、点云与图片，saveORBPcd
-             2.保存节点的Pose，savePose
+    #brief   1.保存节点的orb、点云与图片，saveORBPcd。
+             2.保存节点的Pose，savePose。
              3.生成点云地图，转化为栅格地图，createGridMap。
              4.生成的点云地图效果不好，考虑用gmapping代替。
 
@@ -46,3 +47,12 @@
              2.为了解决tf树的问题，将scan_filtered之后的点云时间戳都设置为ros::Time::now()
                 最初的scan话题不能显示，由于时间戳的问题。
              3.加入霍夫变换求取点云中的直线，但是所求直线难以计算真值。
+
+    #date    20210609
+    #version v0.5
+    #statue  processing
+    #brief   1.给节点增加红色的球状标记。
+             2.添加.gitignore。
+             3.将scan_tools的分支切换为hydro，切换为hydro分支后编译卡顿。
+	       由于indigo分支对于实际运行无影响，所以换回indigo分支。
+             4.节点的真实值问题还是有点麻烦。

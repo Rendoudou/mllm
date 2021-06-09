@@ -43,17 +43,17 @@ ScanToCloudConverter::ScanToCloudConverter(ros::NodeHandle nh, ros::NodeHandle n
   invalid_point_.y = std::numeric_limits<float>::quiet_NaN();
   invalid_point_.z = std::numeric_limits<float>::quiet_NaN();
 
-  if(!nh_private_.getParam("sub_scan_topic", this->sub_topic)){ // RJY 接受参数
+  if(!nh_private_.getParam("sub_scan_topic", this->sub_topic)){ // RJY 发布参数
       this->sub_topic = "scan_filtered";
   }
-  if(!nh_private_.getParam("pub_pc_topic", this->pub_topic)){ // RJY 发布参数
+  if(!nh_private_.getParam("pub_pc_topic", this->pub_topic)){ // RJY 接收参数
       this->pub_topic = "scan_2_pc";
   }
 
   cloud_publisher_ = nh_.advertise<PointCloudT>(
-    this->pub_topic, 1);
+          this->pub_topic, 1);
   scan_subscriber_ = nh_.subscribe(
-    this->sub_topic, 1, &ScanToCloudConverter::scanCallback, this);
+          this->sub_topic, 1, &ScanToCloudConverter::scanCallback, this);
 }
 
 ScanToCloudConverter::~ScanToCloudConverter()
