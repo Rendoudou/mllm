@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(laser_scan_matcher)
 
+#Include csm project code and compile it
+include( ${CMAKE_CURRENT_SOURCE_DIR}/csm/GetCSM.cmake )
+download_and_compile_csm()
+
 # List C++ dependencies on ros packages
 set( ROS_CXX_DEPENDENCIES
   roscpp
@@ -13,16 +17,11 @@ set( ROS_CXX_DEPENDENCIES
   nav_msgs)
 
 # Find catkin and all required ROS components
-find_package(catkin REQUIRED COMPONENTS ${ROS_CXX_DEPENDENCIES} rostest)
+find_package(catkin REQUIRED COMPONENTS ${ROS_CXX_DEPENDENCIES})
 find_package(PCL REQUIRED QUIET)
-
-# Find csm project
-find_package(PkgConfig)
-pkg_check_modules(csm REQUIRED csm)
 
 # Set include directories
 include_directories(include ${catkin_INCLUDE_DIRS} ${csm_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-link_directories(${csm_LIBRARY_DIRS})
 
 # Declare info that other packages need to import library generated here
 catkin_package(
@@ -68,5 +67,5 @@ install(FILES laser_scan_matcher_nodelet.xml
 install(DIRECTORY demo
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION} )
 
-add_rostest(test/run.test)
-add_rostest(test/covariance.test)
+#Install csm library
+install_csm()

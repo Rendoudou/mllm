@@ -1,8 +1,8 @@
 /**
- * @brief 保存关键帧orb与关键帧点云
+ * @brief 保存节点orb与节点点云
  * @author rjy
- * @version 1.1
- * @date 2021.06.02
+ * @version 0.5
+ * @date 2021.06.09
  */
 // std & ros
 #include <iostream>
@@ -10,12 +10,11 @@
 #include <string>
 #include <queue>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <dirent.h>
-#include <string.h>
+#include <cstring>
 #include <sys/stat.h>
 #include <stdlib.h>
-
 
 // pcl
 #include <pcl/point_types.h>
@@ -47,13 +46,14 @@
 // opencv
 #include <opencv2/opencv.hpp>
 
+
 // static params
 #define N 256
 ros::Subscriber sub_pc;
 struct localParam {
     std::string pc_topic = "key_pc_re_pub";
-    std::string key_frame_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame/";
-    std::string key_frame_orb_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_orb/key_frame_orb.yaml";
+    std::string frame_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame/";
+    std::string orb_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_orb/key_frame_orb.yaml";
 
     cv::FileStorage fs;
 
@@ -63,6 +63,7 @@ struct localParam {
 } param;
 
 // functions
+static void initParams(const ros::NodeHandle &nh); // 初始化参数
 static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg);
 static void getFilePath(const char *path, const char *filename, char *filepath);
 static bool deleteFile(const char* path);
@@ -80,23 +81,34 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "saveORBPcd"); //create node
     ros::NodeHandle nh; // node handle
     sub_pc = nh.subscribe<sensor_msgs::PointCloud2>(param.pc_topic, 10, &pcCallBack);
-    deleteFile(param.key_frame_save_path.c_str()); //
-    param.fs.open(param.key_frame_orb_save_path, cv::FileStorage::WRITE);
+    deleteFile(param.frame_save_path.c_str()); //
+    param.fs.open(param.orb_save_path, cv::FileStorage::WRITE);
     while(ros::ok()){
         ros::spin();
     }
     param.fs.release();
+
     return 0;
 }
 
 
 /**
- * @brief getKeyFrame
- *        hokuyo 参数
- *        每帧点数 1800
- *        最大有效距离 10m
- *
- * @param cloud
+ * @brief 参数初始化
+ * @param const ros::NodeHandle & nh 节点句柄
+ */
+static void initParams(const ros::NodeHandle &nh){
+    nh.getParam("orb_save_path", param.orb_save_path);
+    nh.getParam("frame_save_path", param.frame_save_path);
+
+    return;
+}
+
+/**
+ * @brief 点云消息回调函数，点云投影为图像，然后转会为灰度图。
+ *        ORB计算描述子，
+ *        霍夫变换计算直线，
+ *        保存图像、ORB描述子、直线的计算结果。
+ * @param const sensor_msgs::PointCloud2ConstPtr & cloud_msg 点云消息
  */
 static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg) {
     //转换点云
@@ -109,10 +121,10 @@ static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg) {
     double pc;
 
     //确定每个栅格内的点云数目
-    for (size_t i = 0; i < cloud->points.size(); i++) {
-        pa = int((cloud->points[i].x + param.max_distance) / param.grid_precision);
-        pb = int((cloud->points[i].y + param.max_distance) / param.grid_precision);
-        pc = cloud->points[i].z;
+    for (auto & point : cloud->points) {
+        pa = int((point.x + param.max_distance) / param.grid_precision);
+        pb = int((point.y + param.max_distance) / param.grid_precision);
+        pc = point.z;
         if (pc < -0.5) { continue; }
         if (pa < N && pb < N && pa >= 0 && pb >= 0) {
             a[pa][pb] = a[pa][pb] + 1;
@@ -145,19 +157,19 @@ static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg) {
     detectLines(img, res);
 
     //保存点云
-    pcl::io::savePCDFileASCII(param.key_frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + ".pcd", *cloud);
-    cv::imwrite(param.key_frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + ".jpg", img);
-    cv::imwrite(param.key_frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + "_res" + ".jpg", res);
+    pcl::io::savePCDFileASCII(param.frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + ".pcd", *cloud);
+    cv::imwrite(param.frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + ".jpg", img);
+    cv::imwrite(param.frame_save_path + std::to_string(cloud_msg->header.stamp.toNSec()) + "_res" + ".jpg", res);
 
     return;
 }
 
 
 /**
- * @brief
- * @param path
- * @param filename
- * @param filepath
+ * @brief 获取文件路径
+ * @param const char * path 文件夹路径
+ * @param const char * filename 文件名
+ * @param char * filepath 文件路径
  */
 void getFilePath(const char *path, const char *filename, char *filepath){
     strcpy(filepath, path);
@@ -165,15 +177,17 @@ void getFilePath(const char *path, const char *filename, char *filepath){
         strcat(filepath, "/");
     strcat(filepath, filename);
     printf("path is = %s\n",filepath);
+
+    return;
 }
 
 
 /**
- * @brief
- * @param path
- * @return
+ * @brief 删除文件
+ * @param const char * path 文件夹路径
+ * @return true or false
  */
-bool deleteFile(const char* path){
+bool deleteFile(const char *path){
     DIR *dir;
     struct dirent *dir_info;
     struct stat stat_buf;
@@ -198,14 +212,16 @@ bool deleteFile(const char* path){
         }
         closedir(dir);
     }
+
     return false;
 }
 
 
 /**
- * @brief
- * @param img
- * @return
+ * @brief 检测图像中的直线
+ * @param cv::Mat & img 输入的图像
+ * @param cv::Mat & res 结果保存
+ * @return true
  */
 bool detectLines(cv::Mat &img, cv::Mat &res){
     cv::cvtColor(img, res, CV_GRAY2BGR);//将二值图转换为RGB图颜色空间，这里重新创建一张空Mat也行
@@ -213,11 +229,10 @@ bool detectLines(cv::Mat &img, cv::Mat &res){
     std::vector<cv::Vec4f> plines;//保存霍夫变换检测到的直线
     HoughLinesP(img, plines, 1, CV_PI / 180, 10, 0, 10);//提取边缘时，会造成有些点不连续，所以maxLineGap设大点
     //5. 显示检测到的直线
-    cv::Scalar color = cv::Scalar(0, 0, 255);//设置颜色
-    for (size_t i = 0; i < plines.size(); i++)
-    {
-        cv::Vec4f hline = plines[i];
+    cv::Scalar color = cv::Scalar(255, 0, 0);//设置颜色 BGR
+    for (auto hline : plines){
         line(res, cv::Point(hline[0], hline[1]), cv::Point(hline[2], hline[3]), color, 3, cv::LINE_AA);//绘制直线
     }
+
     return true;
 }

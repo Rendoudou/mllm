@@ -31,7 +31,8 @@
 
 typedef scan_tools::LaserScanSplitterNodelet LaserScanSplitterNodelet;
 
-PLUGINLIB_EXPORT_CLASS(LaserScanSplitterNodelet, nodelet::Nodelet)
+PLUGINLIB_DECLARE_CLASS (laser_scan_splitter, LaserScanSplitterNodelet, 
+  LaserScanSplitterNodelet, nodelet::Nodelet);
 
 void LaserScanSplitterNodelet::onInit ()
 {

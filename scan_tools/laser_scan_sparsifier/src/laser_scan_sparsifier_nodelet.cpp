@@ -31,7 +31,8 @@
 
 typedef scan_tools::LaserScanSparsifierNodelet LaserScanSparsifierNodelet;
 
-PLUGINLIB_EXPORT_CLASS(LaserScanSparsifierNodelet, nodelet::Nodelet)
+PLUGINLIB_DECLARE_CLASS (laser_scan_sparsifier, LaserScanSparsifierNodelet, 
+  LaserScanSparsifierNodelet, nodelet::Nodelet);
 
 void LaserScanSparsifierNodelet::onInit ()
 {

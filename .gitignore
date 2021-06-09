@@ -1,0 +1,8 @@
+# ignore files
+/cmake-build-debug
+/.idea
+/multi_level_lidar_map/key_frame
+/multi_level_lidar_map/key_frame_pose
+/multi_level_lidar_map/key_frame_orb
+
+

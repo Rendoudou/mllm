@@ -1,7 +1,7 @@
 /**
  * @brief 发布里程计，构建点云地图，发布同步节点数据。
  * @author rjy
- * @version 1.1
+ * @version 0.5
  * @date 2021.06.02
  */
 
@@ -102,14 +102,17 @@ int main(int argc, char **argv) {
     pc_re_pub = nh.advertise<sensor_msgs::PointCloud2>(param.key_pc_topic, 5); // 同步后节点点云
 
     // ros执行
-    ros::spin();
+    while(ros::ok()) {
+        ros::spin();
+    }
+
     return 0;
 }
 
 
 /**
  * @brief 参数初始化
- * @param nh 节点句柄
+ * @param const ros::NodeHandle & nh 节点句柄
  */
 static void initParams(const ros::NodeHandle &nh) {
     nh.getParam("scan_2_pc_topic", param.scan_2_pc_topic);
@@ -119,14 +122,15 @@ static void initParams(const ros::NodeHandle &nh) {
 
     param.last_pose.setIdentity();
     param.now_pose.setIdentity();
+
     return;
 }
 
 
 /**
- * @brief pose & pc2的同步回调函数
- * @param pose_stamped_ptr
- * @param scan_2_pc_ptr
+ * @brief pose & pc2的同步回调函数,发布里程计与判断节点
+ * @param const geometry_msgs::PoseStampedConstPtr & pose_stamped_ptr
+ * @param const sensor_msgs::PointCloud2ConstPtr & scan_2_pc_ptr
  */
 static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr,
                                const sensor_msgs::PointCloud2ConstPtr &scan_2_pc_ptr) {
@@ -157,9 +161,9 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
 
 
 /**
- * @brief
- * @param pose_stamped_ptr
- * @return Eigen::Matrix4f
+ * @brief 将geometry_msgs::PoseStamped类型转换为 Eigen::Matrix4d
+ * @param const geometry_msgs::PoseStampedConstPtr & pose_stamped_ptr
+ * @return Eigen::Matrix4f 转换结果
  */
 static Eigen::Matrix4d poseStamped2Matrix4d(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
     Eigen::Matrix4d pose_matrix;
@@ -181,9 +185,11 @@ static Eigen::Matrix4d poseStamped2Matrix4d(const geometry_msgs::PoseStampedCons
 }
 
 
+
 /**
- * @brief
- * @return
+ * @brief 判断是否为合适的定位节点
+ * @param const geometry_msgs::PoseStampedConstPtr & pose_stamped_ptr
+ * @return true or false 判断结果
  */
 static bool isNode(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
     static bool first_node = true;
@@ -222,5 +228,6 @@ static bool isNode(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
         */
         return true;
     }
+
     return false;
 }

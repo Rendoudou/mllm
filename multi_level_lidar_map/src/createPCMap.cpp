@@ -1,8 +1,8 @@
 /**
- * @brief 发布里程计，构建点云地图，发布同步节点数据。
+ * @brief 构建点云地图，没什么用，就图一乐.
  * @author rjy
- * @version 1.1
- * @date 2021.06.02
+ * @version 0.5
+ * @date 2021.06.09
  */
 
 // std & ros
@@ -86,7 +86,10 @@ int main(int argc, char **argv) {
     map_pub = nh.advertise<sensor_msgs::PointCloud2>(param.map_pub_topic, 5); // 构建地图点云
 
     // ros执行
-    ros::spin();
+    while(ros::ok()){
+        ros::spin();
+    }
+
     return 0;
 }
 
@@ -98,9 +101,9 @@ int main(int argc, char **argv) {
 static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr,
                                const sensor_msgs::PointCloud2ConstPtr &scan_2_pc_ptr){
     // 转换点云消息格式
-    pcl::PointCloud<PointT>::Ptr cloud_in(new pcl::PointCloud<PointT>); //
-    pcl::PointCloud<PointT>::Ptr cloud_in_transfer(new pcl::PointCloud<PointT>);
-    static pcl::PointCloud<PointT>::Ptr cloud_map(new pcl::PointCloud<PointT>);
+    pcl::PointCloud<PointT>::Ptr cloud_in(new pcl::PointCloud<PointT>); // 原始点云
+    pcl::PointCloud<PointT>::Ptr cloud_in_transfer(new pcl::PointCloud<PointT>); // 位置转换后的点云
+    static pcl::PointCloud<PointT>::Ptr cloud_map(new pcl::PointCloud<PointT>); // map cloud
     pcl::fromROSMsg(*scan_2_pc_ptr, *cloud_in); //转换消息格式
 
     //构建、发布地图
@@ -117,9 +120,9 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
 
 
 /**
- * @brief
- * @param pose_stamped_ptr
- * @return Eigen::Matrix4f
+ * @brief 将geometry_msgs::PoseStamped类型转换为 Eigen::Matrix4d
+ * @param const geometry_msgs::PoseStampedConstPtr & pose_stamped_ptr
+ * @return Eigen::Matrix4f 转换结果
  */
 static Eigen::Matrix4d poseStamped2Matrix4d(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
     Eigen::Matrix4d pose_matrix;

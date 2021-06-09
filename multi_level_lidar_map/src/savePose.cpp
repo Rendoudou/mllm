@@ -1,8 +1,8 @@
 /**
- * @brief 保存关键帧位姿
+ * @brief 保存节点位姿，发布节点标记
  * @author rjy
- * @version 1.1
- * @date 2021.06.02
+ * @version 0.5
+ * @date 2021.06.09
  */
 // std & ros
 #include <iostream>
@@ -30,6 +30,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/LaserScan.h> //单线激光雷达
+#include <visualization_msgs/MarkerArray.h> // marker
 
 // message filters
 #include <message_filters/subscriber.h>
@@ -41,18 +42,27 @@
 // opencv
 #include <opencv2/opencv.hpp>
 
+
 // params
 ros::Subscriber sub_pose;
+ros::Publisher pub_markers;
 
 struct localParam {
     std::string pose_topic = "key_pose_re_pub";
-    std::string key_frame_pose_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_pose/key_frame_pose.yaml";
+    std::string pose_save_path = "/home/RJY/catkin_ws_multi_level_map/src/multi_level_lidar_map/key_frame_pose/key_frame_pose.yaml";
+
     cv::FileStorage fs;
+
+    visualization_msgs::MarkerArray nodes;
+    visualization_msgs::Marker node;
+    std::string marker_topic = "node_marker";
+    std::string marker_frame_id = "map";
 } param;
 
 // function
 static void initParams(const ros::NodeHandle &nh); // 初始化参数
 static void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose);
+
 
 /**
  * @brief main function
@@ -66,31 +76,36 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh; // node handle
     initParams(nh);
     sub_pose = nh.subscribe<geometry_msgs::PoseStamped>(param.pose_topic, 5, &poseCallback);
-    param.fs.open(param.key_frame_pose_save_path, cv::FileStorage::WRITE);
+    pub_markers = nh.advertise<visualization_msgs::MarkerArray>(param.marker_topic, 5);
+    param.fs.open(param.pose_save_path, cv::FileStorage::WRITE);
     while (ros::ok()) {
         ros::spin();
     }
     param.fs.release();
+
     return 0;
 }
 
 
 /**
  * @brief 参数初始化
- * @param nh 节点句柄
+ * @param const ros::NodeHandle & nh 节点句柄
  */
 static void initParams(const ros::NodeHandle &nh) {
-    nh.getParam("save_path", param.key_frame_pose_save_path);
+    nh.getParam("pose_save_path", param.pose_save_path);
+
     return;
 }
 
 
 /**
- * @brief 位姿回调函数
- * @param pose 位姿信息msg
+ * @brief 位姿回调函数，存储位姿到.yaml，发布节点标记
+ * @param const geometry_msgs::PoseStampedConstPtr & pose 位姿信息msg
  */
 static void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose) {
     static ros::Time stamp;
+
+    //save pose to .yaml
     stamp = pose->header.stamp;
     param.fs << "KeyStamp" + std::to_string(stamp.toNSec());
     param.fs << "{" <<
@@ -103,5 +118,25 @@ static void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose) {
     "qz" << pose->pose.orientation.z <<
     "qw" << pose->pose.orientation.w <<
     "}";
+
+    //show pose with marker
+    static int id = 0;
+    id++;
+    param.node.header.frame_id = param.marker_frame_id;
+    param.node.header.stamp = pose->header.stamp;
+    param.node.pose = pose->pose;
+    param.node.id = id;
+    param.node.type = visualization_msgs::Marker::SPHERE; // sphere
+    param.node.action = visualization_msgs::Marker::ADD; // action
+    param.node.scale.x = 0.25; // scale
+    param.node.scale.y = 0.25;
+    param.node.scale.z = 0.25;
+    param.node.color.a = 0.5; // color
+    param.node.color.r = 0;
+    param.node.color.g = 0;
+    param.node.color.b = 255;
+    param.nodes.markers.push_back(param.node);
+    pub_markers.publish(param.nodes);
+
     return;
 }
