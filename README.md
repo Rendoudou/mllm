@@ -61,7 +61,7 @@ Multi level lidar Map
 	           由于indigo分支对于实际运行无影响，所以换回indigo分支。
              4.节点的真实值问题还是有点麻烦。
 
-####date    20210621
+#### date    20210621
     #version v0.6
     #status  processing
     #brief   1.修改launch文件，construct_map_gmapping.launch、construct_map_hector.launch。
