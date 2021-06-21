@@ -1,8 +1,8 @@
 /**
  * @brief 保存节点orb与节点点云
  * @author rjy
- * @version 0.5
- * @date 2021.06.09
+ * @version 0.6
+ * @date 2021.06.21
  */
 // std & ros
 #include <iostream>
@@ -112,7 +112,7 @@ static void initParams(const ros::NodeHandle &nh){
  */
 static void pcCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud_msg) {
     //转换点云
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    static pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
     pcl::fromROSMsg(*cloud_msg, *cloud);
 
     //定义阈值
@@ -176,7 +176,7 @@ void getFilePath(const char *path, const char *filename, char *filepath){
     if(filepath[strlen(path) - 1] != '/')
         strcat(filepath, "/");
     strcat(filepath, filename);
-    printf("path is = %s\n",filepath);
+    //printf("path is = %s\n",filepath);
 
     return;
 }

@@ -1,8 +1,8 @@
 /**
  * @brief 发布里程计，构建点云地图，发布同步节点数据。
  * @author rjy
- * @version 0.5
- * @date 2021.06.02
+ * @version 0.6
+ * @date 2021.06.21
  */
 
 // std & ros
@@ -166,7 +166,7 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
  * @return Eigen::Matrix4f 转换结果
  */
 static Eigen::Matrix4d poseStamped2Matrix4d(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
-    Eigen::Matrix4d pose_matrix;
+    static Eigen::Matrix4d pose_matrix;
     pose_matrix.setIdentity();
     double qw = pose_stamped_ptr->pose.orientation.w,
             qx = pose_stamped_ptr->pose.orientation.x,
@@ -183,7 +183,6 @@ static Eigen::Matrix4d poseStamped2Matrix4d(const geometry_msgs::PoseStampedCons
 
     return pose_matrix;
 }
-
 
 
 /**

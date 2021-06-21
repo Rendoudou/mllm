@@ -1,8 +1,8 @@
 /**
  * @brief 构建点云地图，没什么用，就图一乐.
  * @author rjy
- * @version 0.5
- * @date 2021.06.09
+ * @version 0.6
+ * @date 2021.06.21
  */
 
 // std & ros
@@ -101,13 +101,13 @@ int main(int argc, char **argv) {
 static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr,
                                const sensor_msgs::PointCloud2ConstPtr &scan_2_pc_ptr){
     // 转换点云消息格式
-    pcl::PointCloud<PointT>::Ptr cloud_in(new pcl::PointCloud<PointT>); // 原始点云
-    pcl::PointCloud<PointT>::Ptr cloud_in_transfer(new pcl::PointCloud<PointT>); // 位置转换后的点云
+    static pcl::PointCloud<PointT>::Ptr cloud_in(new pcl::PointCloud<PointT>); // 原始点云
+    static pcl::PointCloud<PointT>::Ptr cloud_in_transfer(new pcl::PointCloud<PointT>); // 位置转换后的点云
     static pcl::PointCloud<PointT>::Ptr cloud_map(new pcl::PointCloud<PointT>); // map cloud
     pcl::fromROSMsg(*scan_2_pc_ptr, *cloud_in); //转换消息格式
 
     //构建、发布地图
-    sensor_msgs::PointCloud2 map_msgs;
+    static sensor_msgs::PointCloud2 map_msgs;
     pcl::transformPointCloud(*cloud_in, *cloud_in_transfer, poseStamped2Matrix4d(pose_stamped_ptr));
     *cloud_map = *cloud_map + *cloud_in_transfer;
     pcl::toROSMsg(*cloud_map, map_msgs);

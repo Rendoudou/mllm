@@ -10,6 +10,9 @@ Multi level lidar Map
     ros-package: laser_filters
     ros-package: scan_tools: laser_scan_matcher
     ros-package: scan_tools: scan_to_cloud_converter
+    ros_package: slam_gmapping
+    ros-package: hector_slam
+    ros-package: navigation
     接收的点云话题名为 /scan
     激光雷达 HOKUYO 10XL
 
@@ -57,8 +60,20 @@ Multi level lidar Map
              3.将scan_tools的分支切换为hydro, 切换为hydro分支后编译卡顿。
 	           由于indigo分支对于实际运行无影响，所以换回indigo分支。
              4.节点的真实值问题还是有点麻烦。
+
+####date    20210621
+    #version v0.6
+    #status  processing
+    #brief   1.修改launch文件，construct_map_gmapping.launch、construct_map_hector.launch。
+             2.新增hector_slam功能包，对比gmapping生成的栅格地图。
+             3.使用navigation/map_server/map_saver保存栅格地图。
+             4.对比生成的两种栅格地图，hector_slam效果略优。
+             5.使用map_saver保存生成的栅格地图
+             6.下一步方向，用hector_slam的里程计结果作为节点位姿的真值，做图优化。
+
 ## 使用方法
 #### 使用仓库提供的小例子创建未完善的地图
+    # new bash
     # mkdir catkin_ws_mllm
     # cd catkin_ws_mllm
     # mkdir src
@@ -67,4 +82,7 @@ Multi level lidar Map
     # cd ..
     # catkin_make
     # source devel/setup.bash
-    # roslaunch multi_level_lidar_map constructMap.launch
+    # roslaunch multi_level_lidar_map construct_map_hector.launch
+    # ...
+    # new bash
+    # rosrun map_server map_saver -f hector_map map:=/hector_map
