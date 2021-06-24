@@ -1,9 +1,10 @@
 /**
  * @brief 保存节点位姿，发布节点标记
  * @author rjy
- * @version 0.5
- * @date 2021.06.09
+ * @version 0.7
+ * @date 2021.06.24
  */
+
 // std & ros
 #include <iostream>
 #include <ros/ros.h>
@@ -78,9 +79,11 @@ int main(int argc, char **argv) {
     sub_pose = nh.subscribe<geometry_msgs::PoseStamped>(param.pose_topic, 5, &poseCallback);
     pub_markers = nh.advertise<visualization_msgs::MarkerArray>(param.marker_topic, 5);
     param.fs.open(param.pose_save_path, cv::FileStorage::WRITE);
+    param.fs << "KeyPose" << "[";
     while (ros::ok()) {
         ros::spin();
     }
+    param.fs << "]";
     param.fs.release();
 
     return 0;
@@ -104,10 +107,11 @@ static void initParams(const ros::NodeHandle &nh) {
  */
 static void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose) {
     static ros::Time stamp;
+    static int id = 0;
 
-    //save pose to .yaml
+    // save pose to .yaml
     stamp = pose->header.stamp;
-    param.fs << "KeyStamp" + std::to_string(stamp.toNSec());
+    // param.fs << "KeyStamp" + std::to_string(id);
     param.fs << "{" <<
     "stamp" << stamp.toSec() <<
     "x" << pose->pose.position.x <<
@@ -119,8 +123,7 @@ static void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose) {
     "qw" << pose->pose.orientation.w <<
     "}";
 
-    //show pose with marker
-    static int id = 0;
+    // show pose with marker
     id++;
     param.node.header.frame_id = param.marker_frame_id;
     param.node.header.stamp = pose->header.stamp;

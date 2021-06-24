@@ -71,8 +71,21 @@ Multi level lidar Map
              5.使用map_saver保存生成的栅格地图
              6.下一步方向，用hector_slam的里程计结果作为节点位姿的真值，做图优化。
 
+#### date    20210624
+    #version v0.7
+    #brief   1.特征提取修改为全局orb,修正了yaml的保存问题，前一版本保存格式不利于查找。
+             2.实现了相似节点的快速查找，即节点级定位，采用暴力匹配的方案。暴力匹配不好，考虑wifi定位做粗定位。
+             3.增加的内容主要在localization.cpp中，add localization.launch、view_localization.rviz
+             4.当前粗略的实现了输入点云的最优节点查找，下一步要实现度量级别定位。
+             5.实际运行下来发现开源的hector_slam与gmapping的里程计结果与scan_matcher的结果非常接近。还有必要做g2o优化里程计吗？
+             6.下一步目标实现度量级别定位并且输出预测的位姿，transformLaserScanToPointCloud api很好用。
+             7.可视化部分加入了预先构建的地图与存储的节点，下一步将加入预测的位姿。
+             8.添加navigation包只用做加载地图与保存地图使用。
+             
+
 ## 使用方法
-#### 使用仓库提供的小例子创建未完善的地图
+#### 使用仓库提供的小例子创建未完善的地图与定位
+    ### construct map ###
     # new bash
     # mkdir catkin_ws_mllm
     # cd catkin_ws_mllm
@@ -86,3 +99,9 @@ Multi level lidar Map
     # ...
     # new bash
     # rosrun map_server map_saver -f hector_map map:=/hector_map
+
+    ### localization ###
+    # new bash
+    # cd catkin_ws_mllm
+    # source devel/setup.bash
+    # roslaunch multi_level_lidar_map localization.launch

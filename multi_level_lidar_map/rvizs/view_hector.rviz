@@ -6,9 +6,10 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /PointCloud1
-        - /Map1
-        - /Map1/Status1
+        - /MarkerArray1
+        - /MarkerArray1/Status1
+        - /Pose1
+        - /Pose2
         - /Map1/Position1
         - /Map1/Orientation1
       Splitter Ratio: 0.5
@@ -90,7 +91,7 @@ Visualization Manager:
       Marker Topic: /node_marker
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -99,13 +100,28 @@ Visualization Manager:
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: true
-      Head Length: 0.300000012
-      Head Radius: 0.100000001
+      Head Length: 0.150000006
+      Head Radius: 0.0500000007
       Name: Pose
-      Shaft Length: 1
-      Shaft Radius: 0.0500000007
+      Shaft Length: 0.5
+      Shaft Radius: 0.0250000004
       Shape: Arrow
       Topic: /slam_out_pose
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.100000001
+      Class: rviz/Pose
+      Color: 0; 0; 255
+      Enabled: true
+      Head Length: 0.150000006
+      Head Radius: 0.0500000007
+      Name: Pose
+      Shaft Length: 0.5
+      Shaft Radius: 0.0250000004
+      Shape: Arrow
+      Topic: /pose_stamped
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -203,7 +219,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10.8417892
+      Distance: 10.6279335
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -218,10 +234,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.44479644
+      Pitch: 0.249797881
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.11722493
+      Yaw: 2.35723233
     Saved: ~
 Window Geometry:
   Displays:

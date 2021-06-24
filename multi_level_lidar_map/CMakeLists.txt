@@ -19,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         tf2
         tf2_msgs
+        tf
+        laser_geometry
         )
 
 ## System dependencies are found with CMake's conventions
@@ -143,6 +145,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+## 建图节点 ##
 add_executable(syncPosePC src/syncPosePC.cpp)
 add_dependencies(syncPosePC ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(syncPosePC
@@ -169,3 +172,12 @@ target_link_libraries(createPCMap
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         )
+
+## 定位节点 ##
+add_executable(localization src/localization.cpp)
+add_dependencies(localization ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(localization
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
+

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <!-- args -->
+    <arg name="use_rviz" default="true"/>            #### 动态传参，使用rviz可视化工具
+    <arg name="scan_topic" default="scan"/>          #### input scan
+    <arg name="map" default="hector_map.yaml"/>      #### 加载栅格地图参数
+    <param name="use_sim_time" value="true"/>        #### 公共空间的参数，使用仿真时间
+
+    <!-- map_server,加载地图 -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find multi_level_lidar_map)/grid_map/$(arg map)"/>
+
+    <!-- play,play bag sim 当作实时输入-->
+    <node pkg="rosbag" type="play" name="play" required="false"
+          args="$(find multi_level_lidar_map)/hokuyo_laser_scan_0531.bag --delay=10 --clock">
+    </node>
+
+    <!-- scan_to_scan_filter_chain，启动滤波器 -->
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+        #### 加载滤波器参数 ######
+        <remap from="scan" to="$(arg scan_topic)"/> #### 重映射激光话题
+        <rosparam command="load" file="$(find multi_level_lidar_map)/config/hokuyo_filter.yaml"/>
+    </node>
+
+    <!-- localization,定位节点 -->
+    <node pkg="multi_level_lidar_map" type="localization" name="localization" output="screen">
+
+    </node>
+
+    <!-- rviz,可视化组件 -->
+    <group if="$(arg use_rviz)">
+        <node pkg="rviz" type="rviz" name="rviz_multi_level_lidar_map" required="true"
+              args="-d $(find multi_level_lidar_map)/rvizs/view_localization.rviz"/>
+    </group>
+
+
+</launch>
