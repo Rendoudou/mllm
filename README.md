@@ -20,7 +20,7 @@ Multi level lidar Map
 
 #### date    20210602
     #version v0.1
-    #statue  processing
+    #status  processing
     #brief   1.录制了Hokuyo激光雷达采集的点云数据包。
              2.使用laser_filters对laserScan进行滤波，去除拖延点，插值滤波，截取-130度至130度。
              3.使用laser_scan_matcher获取关键帧位姿（具体关键帧规则还未确定）。
@@ -31,7 +31,7 @@ Multi level lidar Map
 
 #### date    20210603
     #version v0.2
-    #statue  processing
+    #status  processing
     #brief   1.设置节点规则。node_liner_limit、node_angular_limit。
              2.记录节点时间戳和节点信息。save_path。
              3.节点角度需求判断用tf2::getYaw效果好于Eigen::eulerAngles。
@@ -46,7 +46,7 @@ Multi level lidar Map
 
 #### date    20210608
     #version v0.4
-    #statue  processing
+    #status  processing
     #brief   1.使用gmapping生成栅格地图，slam gammping。
              2.为了解决tf树的问题，将scan_filtered之后的点云时间戳都设置为ros::Time::now()
                最初的scan话题不能显示，由于时间戳的问题。
@@ -54,7 +54,7 @@ Multi level lidar Map
 
 #### date    20210609
     #version v0.5
-    #statue  processing
+    #status  processing
     #brief   1.给节点增加红色的球状标记。
              2.添加.gitignore。
              3.将scan_tools的分支切换为hydro, 切换为hydro分支后编译卡顿。
@@ -73,6 +73,7 @@ Multi level lidar Map
 
 #### date    20210624
     #version v0.7
+    #status  processing
     #brief   1.特征提取修改为全局orb,修正了yaml的保存问题，前一版本保存格式不利于查找。
              2.实现了相似节点的快速查找，即节点级定位，采用暴力匹配的方案。暴力匹配不好，考虑wifi定位做粗定位。
              3.增加的内容主要在localization.cpp中，add localization.launch、view_localization.rviz
@@ -81,7 +82,14 @@ Multi level lidar Map
              6.下一步目标实现度量级别定位并且输出预测的位姿，transformLaserScanToPointCloud api很好用。
              7.可视化部分加入了预先构建的地图与存储的节点，下一步将加入预测的位姿。
              8.添加navigation包只用做加载地图与保存地图使用。
-             
+
+#### date    20210625
+    #version v0.8
+    #status  processing
+    #brief   1.修正建图中的带有微小延迟误差的同步问题。这给后续的定位调试造成了很大的麻烦。（我找bug找了一整天，哭了）。
+             2.全局orb匹配结果不够准确，出现错误匹配的情况，点云投影图的格式可能对其有较大影响。
+             3.做可视化处理，显示预测的节点位置，做tf_tree的更新。
+             4.主要修改localization.cpp，可能还是写得太乱了，果然还是只有自己能看懂。
 
 ## 使用方法
 #### 使用仓库提供的小例子创建未完善的地图与定位

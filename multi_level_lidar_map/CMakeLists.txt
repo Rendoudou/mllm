@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         tf2
         tf2_msgs
+        tf2_ros
         tf
         laser_geometry
         )

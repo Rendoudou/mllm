@@ -1,8 +1,8 @@
 /**
  * @brief 发布里程计，构建点云地图，发布同步节点数据。
  * @author rjy
- * @version 0.6
- * @date 2021.06.21
+ * @version 0.8
+ * @date 2021.06.25
  */
 
 // std & ros
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
     pc_re_pub = nh.advertise<sensor_msgs::PointCloud2>(param.key_pc_topic, 5); // 同步后节点点云
 
     // ros执行
-    while(ros::ok()) {
+    while (ros::ok()) {
         ros::spin();
     }
 
@@ -136,6 +136,7 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
                                const sensor_msgs::PointCloud2ConstPtr &scan_2_pc_ptr) {
     //发布里程计
     static nav_msgs::Odometry odom;                         //里程计信息
+    static geometry_msgs::PoseStamped temp_pose_stamped;    //位姿
     // publish the transform 换个数据格式转发odometry,publish the transform
     odom.header.frame_id = param.odom_frame_id;             //节点id odom
     odom.header.stamp = pose_stamped_ptr->header.stamp;     //设置时间戳
@@ -149,13 +150,16 @@ static void syncPosePCCallback(const geometry_msgs::PoseStampedConstPtr &pose_st
 
     //判断节点
     if (isNode(pose_stamped_ptr)) {
-        pose_re_pub.publish(*pose_stamped_ptr);
+        temp_pose_stamped = *pose_stamped_ptr;
+        temp_pose_stamped.header.stamp = scan_2_pc_ptr->header.stamp;
+        pose_re_pub.publish(temp_pose_stamped);
         pc_re_pub.publish(*scan_2_pc_ptr);
+        std::cout << "同步成功 : ";
+        std::cout << std::to_string(pose_stamped_ptr->header.stamp.toNSec()) << " "
+                  << std::to_string(temp_pose_stamped.header.stamp.toNSec()) << " "
+                  << std::to_string(scan_2_pc_ptr->header.stamp.toNSec()) << std::endl;
     }
-    /*
-    ROS_INFO("同步成功, pose stamp: %lf, key_frame_stamp: %lf", param.curr_pose_stamp.toSec(),
-             param.key_frame_stamp.toSec());
-    */
+
     return;
 }
 
@@ -218,7 +222,8 @@ static bool isNode(const geometry_msgs::PoseStampedConstPtr &pose_stamped_ptr) {
     tf2::Quaternion tf2_pose_change_q(pose_change_q.x(), pose_change_q.y(), pose_change_q.z(), pose_change_q.w());
     angular_change = fabs(tf2::getYaw(tf2_pose_change_q));
 
-    if (liner_change >= param.node_liner_limit || (angular_change >= param.node_angular_limit && angular_change <= 3)) { // || (angular_change >= param.node_angular_limit && angular_change <= 3)
+    if (liner_change >= param.node_liner_limit || (angular_change >= param.node_angular_limit && angular_change <=
+                                                                                                 3)) { // || (angular_change >= param.node_angular_limit && angular_change <= 3)
         param.last_pose = param.now_pose; // 更新pose
         /*
         std::cout << "stamp" << pose_stamped_ptr->header.stamp.toSec() << std::endl
